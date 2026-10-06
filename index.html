@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafika Komputer – Objek 2D Three.js | Gedung Polindra</title>
+    <meta name="description" content="Tugas Grafika Komputer: Objek 2D menggunakan Three.js – Lingkaran, Persegi, Segitiga, dan Gedung Polindra dengan transformasi translasi, rotasi, dan scaling.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Tombol untuk membuka panel (Desktop & Mobile) -->
+<button id="toggle-ui-btn">⚙️ Pengaturan</button>
+
+<!-- UI PANEL -->
+<div id="ui-panel">
+    <div class="panel-header">
+        <div class="panel-icon">🏛️</div>
+        <div class="panel-title-container">
+            <div class="panel-title">Grafika Komputer 2D</div>
+            <div class="panel-subtitle">Transformasi Three.js – Gedung Polindra</div>
+        </div>
+        <button id="close-panel-btn" title="Tutup Panel">✖</button>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Pemilih Objek -->
+    <div class="ctrl">
+        <div class="ctrl-label" style="margin-bottom: 8px;">Pilih Objek untuk Diedit:</div>
+        <select id="obj-selector" class="dropdown-select">
+            <option value="group-sun">☀️ Matahari</option>
+            <option value="group-bld" selected>🏢 Gedung Polindra</option>
+            <option value="group-tree">🌲 Pohon</option>
+        </select>
+    </div>
+
+    <!-- Matahari -->
+    <div class="ctrl-group" id="group-sun" style="display: none;">
+        <div class="ctrl">
+            <div class="ctrl-label">Scaling Ukuran <span class="val" id="v-sun-scale">1.0</span></div>
+            <input type="range" id="s-sun-scale" min="0.3" max="2.5" step="0.1" value="1">
+        </div>
+        <div class="ctrl">
+            <div class="ctrl-label">Kecepatan Rotasi <span class="val" id="v-sun-rot">0.005</span></div>
+            <input type="range" id="s-sun-rot" min="0" max="0.05" step="0.001" value="0.005">
+        </div>
+        <div class="ctrl">
+            <div class="ctrl-label">Translasi X <span class="val" id="v-sun-x">0.0</span></div>
+            <input type="range" id="s-sun-x" min="-5" max="5" step="0.5" value="0">
+        </div>
+    </div>
+
+    <!-- Gedung Polindra -->
+    <div class="ctrl-group" id="group-bld">
+        <div class="ctrl">
+            <div class="ctrl-label">Translasi X <span class="val" id="v-bld-x">0.0</span></div>
+            <input type="range" id="s-bld-x" min="-6" max="6" step="0.5" value="0">
+        </div>
+        <div class="ctrl">
+            <div class="ctrl-label">Translasi Y <span class="val" id="v-bld-y">0.0</span></div>
+            <input type="range" id="s-bld-y" min="-4" max="4" step="0.5" value="0">
+        </div>
+        <div class="ctrl">
+            <div class="ctrl-label">Scaling <span class="val" id="v-bld-s">1.0</span></div>
+            <input type="range" id="s-bld-s" min="0.4" max="1.6" step="0.05" value="1">
+        </div>
+    </div>
+
+    <!-- Pohon -->
+    <div class="ctrl-group" id="group-tree" style="display: none;">
+        <div class="ctrl">
+            <div class="ctrl-label">Rotasi (Kemiringan) <span class="val" id="v-tree-rot">0.0</span></div>
+            <input type="range" id="s-tree-rot" min="-0.4" max="0.4" step="0.02" value="0">
+        </div>
+        <div class="ctrl">
+            <div class="ctrl-label">Scaling <span class="val" id="v-tree-s">1.0</span></div>
+            <input type="range" id="s-tree-s" min="0.5" max="2.0" step="0.1" value="1">
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-primary" id="btn-reset">↺ Reset</button>
+        <button class="btn btn-secondary" id="btn-pause">⏸ Pause</button>
+    </div>
+</div>
+
+<!-- LEGENDA -->
+<div id="legend">
+    <div class="legend-title">Keterangan Objek</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fcd34d"></div>Matahari – Lingkaran + Segitiga (Sinar)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffffff"></div>Awan – Lingkaran</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Gedung Polindra – Persegi Panjang</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Pohon – Segitiga Bertumpuk</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Logo Polindra – Lingkaran Konsentrik</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#334155"></div>Jalan &amp; Tanah – Persegi</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Kendaraan – Persegi + Lingkaran (Roda)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#475569"></div>Burung – Siluet Kurva</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     IDENTITAS MAHASISWA
+══════════════════════════════════════════════════════════ -->
+<div id="identity-card">
+    <div class="id-badge">👤 Identitas Mahasiswa</div>
+    <div class="id-row">
+        <span class="id-key">Nama</span>
+        <span class="id-sep">:</span>
+        <span class="id-val highlight">Muhamad Azmi Agil</span>
+    </div>
+    <div class="id-row">
+        <span class="id-key">NIM</span>
+        <span class="id-sep">:</span>
+        <span class="id-val">2305071</span>
+    </div>
+    <div class="id-row">
+        <span class="id-key">Kelas</span>
+        <span class="id-sep">:</span>
+        <span class="id-val">D4 RPL 4C</span>
+    </div>
+</div>
+
+<!-- Watermark -->
+<div id="watermark">
+    Politeknik Negeri Indramayu &nbsp;·&nbsp; D4 RPL 4C<br>
+    Grafika Komputer © 2026
+</div>
+
+<!-- THREE.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
