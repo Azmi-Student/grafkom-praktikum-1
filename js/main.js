@@ -68,10 +68,11 @@ const mkTriangle = (base, height, color, x, y, z, rotZ) => {
 };
 
 /* ══════════════════════════════════════════════
-   LANGIT GRADASI
+   LANGIT & LAUT GRADASI
 ══════════════════════════════════════════════ */
-// Langit dipertinggi menjadi 80 unit agar tidak ada void hitam di layar mobile yang vertikal
+// Langit biru muda
 scene.add(mkRect(80, 80, 0xbae6fd, 0, 40, -2));
+// Lautan cyan di cakrawala (Horizon)
 scene.add(mkRect(80, 12, 0x7dd3fc, 0, 0, -2.1));
 
 /* ══════════════════════════════════════════════
@@ -720,6 +721,45 @@ birds.push(mkBird(16, 5.5, 0.25));
 birds.forEach(b => scene.add(b));
 
 /* ══════════════════════════════════════════════
+   KAPAL LAUT (ShapeGeometry + Persegi)
+   Transformasi: Translasi mengarungi lautan
+══════════════════════════════════════════════ */
+const mkShip = (x, y, sc, dir) => {
+    const g = new THREE.Group();
+    // Lambung kapal (Trapezium menggunakan ShapeGeometry)
+    const hullShape = new THREE.Shape();
+    hullShape.moveTo(-2, 0);
+    hullShape.lineTo(2, 0);
+    hullShape.lineTo(2.5, 0.8);
+    hullShape.lineTo(-2.2, 0.8);
+    hullShape.closePath();
+    const hull = new THREE.Mesh(new THREE.ShapeGeometry(hullShape), mat(0x1e293b));
+    g.add(hull);
+    
+    // Kabin putih
+    g.add(mkRect(2.4, 0.8, 0xffffff, 0, 1.2, 0.01));
+    // Cerobong merah
+    g.add(mkRect(0.4, 1.0, 0xef4444, -0.6, 1.8, 0.02));
+    
+    // Jendela kabin
+    g.add(mkRect(0.3, 0.3, 0x0ea5e9, 0.5, 1.2, 0.02));
+    g.add(mkRect(0.3, 0.3, 0x0ea5e9, 0.0, 1.2, 0.02));
+    
+    // Ditempatkan di kedalaman Z = -1.9 (Di belakang gedung Z=0, di depan laut Z=-2.1)
+    g.position.set(x, y, -1.9); 
+    g.scale.set(sc * dir, sc, 1);
+    g.userData = { speed: 0.005 + Math.random() * 0.01, dir: dir };
+    return g;
+};
+
+const ships = [];
+// Kapal 1 bergerak ke kanan, ditempatkan di lautan cyan (Y = -3.5)
+ships.push(mkShip(-15, -3.5, 0.6, 1)); 
+// Kapal 2 lebih kecil, bergerak ke kiri, ditempatkan lebih dekat ke batas rumput (Y = -4.5)
+ships.push(mkShip( 15, -4.5, 0.4, -1)); 
+ships.forEach(s => scene.add(s));
+
+/* ══════════════════════════════════════════════
    KONTROL UI
 ══════════════════════════════════════════════ */
 let sunRotSpeed = 0.005;
@@ -878,6 +918,15 @@ function animate() {
             if (b.position.x < -18) {
                 b.position.x = 18;
                 b.position.y = b.userData.baseY = 5 + Math.random() * 3;
+            }
+        });
+        // 6. Translasi kapal melintasi laut
+        ships.forEach(s => {
+            s.position.x += s.userData.speed * s.userData.dir;
+            // Berbalik arah jika sampai ujung layar
+            if (s.position.x < -20 || s.position.x > 20) {
+                s.userData.dir *= -1;
+                s.scale.x = Math.abs(s.scale.x) * s.userData.dir; // Balikkan arah hadap
             }
         });
     }
